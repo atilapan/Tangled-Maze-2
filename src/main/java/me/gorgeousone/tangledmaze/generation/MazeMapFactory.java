@@ -5,6 +5,7 @@ import me.gorgeousone.tangledmaze.generation.paving.ExitSegment;
 import me.gorgeousone.tangledmaze.generation.paving.PathGen;
 import me.gorgeousone.tangledmaze.generation.paving.PathType;
 import me.gorgeousone.tangledmaze.generation.paving.RoomGen;
+import me.gorgeousone.tangledmaze.generation.polar.PolarMazeFactory;
 import me.gorgeousone.tangledmaze.maze.MazeProperty;
 import me.gorgeousone.tangledmaze.maze.MazeSettings;
 import me.gorgeousone.tangledmaze.util.BlockUtil;
@@ -29,7 +30,12 @@ public class MazeMapFactory {
 		copyMazeOntoMazeMap(maze, map);
 		
 		TerrainEditor.levelOffSpikes(map);
-		MazeMapFactory.createPaths(map, maze.getExits(), settings, BlockUtil.getWorldMinHeight(maze.getWorld()));
+
+		if (settings.getValue(MazeProperty.MAZE_SHAPE) == 1) {
+			PolarMazeFactory.createPaths(map, maze.getExits(), settings, BlockUtil.getWorldMinHeight(maze.getWorld()));
+		} else {
+			MazeMapFactory.createPaths(map, maze.getExits(), settings, BlockUtil.getWorldMinHeight(maze.getWorld()));
+		}
 		map.flip();
 		TerrainEditor.cleanWallEdges(map);
 		return map;
