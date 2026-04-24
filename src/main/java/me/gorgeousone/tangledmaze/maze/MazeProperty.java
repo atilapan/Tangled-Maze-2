@@ -13,7 +13,8 @@ public enum MazeProperty {
 	ROOF_WIDTH(1, 64),
 	ROOM_COUNT(0, 100, 0),
 	ROOM_SIZE(15, 65, 3),
-	SEED(0, 2147483647, 0);
+	SEED(0, 2147483647, 0),
+	MAZE_SHAPE(0, 1, 0);
 	
 	private final int maxVal;
 	private final int minVal;
