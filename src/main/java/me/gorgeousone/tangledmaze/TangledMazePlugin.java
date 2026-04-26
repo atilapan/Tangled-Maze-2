@@ -8,6 +8,7 @@ import me.gorgeousone.tangledmaze.command.BuildMazeCommand;
 import me.gorgeousone.tangledmaze.command.CutClipCommand;
 import me.gorgeousone.tangledmaze.command.GetWandCommand;
 import me.gorgeousone.tangledmaze.command.HelpCommand;
+import me.gorgeousone.tangledmaze.command.LayoutCommand;
 import me.gorgeousone.tangledmaze.loot.LootRemoveCommand;
 import me.gorgeousone.tangledmaze.loot.LootRespawnCommand;
 import me.gorgeousone.tangledmaze.loot.LootSpawnCommand;
@@ -138,6 +139,7 @@ public final class TangledMazePlugin extends JavaPlugin {
 		mazeCmd.addChild(new AddClipCommand(sessionHandler, toolHandler));
 		mazeCmd.addChild(new CutClipCommand(sessionHandler, toolHandler));
 		mazeCmd.addChild(new UndoCommand(sessionHandler));
+		mazeCmd.addChild(new LayoutCommand(sessionHandler));
 		mazeCmd.addChild(new SettingsCommand(sessionHandler));
 		mazeCmd.addChild(new BuildMazeCommand(sessionHandler, buildHandler, toolHandler));
 		mazeCmd.addChild(new UnbuildMazeCommand(sessionHandler, buildHandler));

@@ -225,9 +225,11 @@ public class PathGen {
 			GridCell keySegment = maxLengthLink.getKey();
 			GridCell valueSegment = maxLengthLink.getValue();
 			
-			//get the segment between the two segments
-			Vec2 linkingGridPos = keySegment.getGridPos().add(valueSegment.getGridPos()).floorDiv(2);
-			GridCell linkSegment = gridMap.getCell(linkingGridPos);
+			GridCell linkSegment = gridMap.getCellBetween(keySegment, valueSegment);
+
+			if (linkSegment == null) {
+				break;
+			}
 			//set the linking segment to PAVED
 			gridMap.setPathType(linkSegment.getGridPos(), PathType.PAVED);
 			

@@ -4,9 +4,11 @@ import me.gorgeousone.tangledmaze.generation.paving.PathTree;
 import me.gorgeousone.tangledmaze.util.Direction;
 import me.gorgeousone.tangledmaze.util.Vec2;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -18,6 +20,7 @@ public class GridCell {
 	private final Vec2 min;
 	private final Vec2 max;
 	private final Vec2 gridPos;
+	private final Set<Vec2> columns;
 	
 	private transient PathTree tree;
 	private transient GridCell parent;
@@ -27,6 +30,16 @@ public class GridCell {
 		this.min = min.clone();
 		this.max = min.clone().add(size);
 		this.gridPos = gridPos;
+		this.columns = null;
+	}
+
+	public GridCell(Set<Vec2> columns, Vec2 gridPos) {
+		this.columns = cloneColumns(columns);
+		this.gridPos = gridPos.clone();
+
+		Map.Entry<Vec2, Vec2> bounds = calculateBounds(this.columns);
+		this.min = bounds.getKey();
+		this.max = bounds.getValue();
 	}
 
 	public Vec2 getGridPos() {
@@ -49,11 +62,32 @@ public class GridCell {
 		return max.clone();
 	}
 
+	public boolean hasCustomShape() {
+		return columns != null;
+	}
+
+	public Set<Vec2> getColumns() {
+		if (columns != null) {
+			return cloneColumns(columns);
+		}
+		Set<Vec2> rectColumns = new HashSet<>();
+
+		for (int x = min.getX(); x < max.getX(); ++x) {
+			for (int z = min.getZ(); z < max.getZ(); ++z) {
+				rectColumns.add(new Vec2(x, z));
+			}
+		}
+		return rectColumns;
+	}
+
 	public boolean contains(Vec2 pos) {
 		return contains(pos.getX(), pos.getZ());
 	}
 
 	public boolean contains(int x, int z) {
+		if (columns != null) {
+			return columns.contains(new Vec2(x, z));
+		}
 		return x >= min.getX() && x < max.getX() &&
 				z >= min.getZ() && z < max.getZ();
 	}
@@ -92,6 +126,14 @@ public class GridCell {
 	public Set<Direction> getWallFacings(int x, int z) {
 		Set<Direction> facings = new HashSet<>();
 
+		if (columns != null) {
+			for (Direction dir : Direction.CARDINALS) {
+				if (!columns.contains(new Vec2(x + dir.getX(), z + dir.getZ()))) {
+					facings.add(dir);
+				}
+			}
+			return facings;
+		}
 		if (x == min.getX()) {
 			facings.add(Direction.WEST);
 
@@ -122,6 +164,16 @@ public class GridCell {
 	}
 
 	public List<Vec2> getWalls(Direction dir) {
+		if (columns != null) {
+			List<Vec2> walls = new ArrayList<>();
+
+			for (Vec2 column : columns) {
+				if (!columns.contains(column.clone().add(dir.getVec2()))) {
+					walls.add(column.clone());
+				}
+			}
+			return walls;
+		}
 		Vec2 iter = dir.isPositive() ? max.clone().add(-1, -1) : min.clone();
 		Direction ortho = dir.isCollinearX() ? dir.getLeft() : dir.getRight();
 		Vec2 step = ortho.getVec2();
@@ -160,5 +212,43 @@ public class GridCell {
 				", min=" + min +
 				", max=" + max +
 				']';
+	}
+
+	private static Set<Vec2> cloneColumns(Set<Vec2> source) {
+		Set<Vec2> result = new HashSet<>();
+
+		for (Vec2 column : source) {
+			result.add(column.clone());
+		}
+		return result;
+	}
+
+	private static Map.Entry<Vec2, Vec2> calculateBounds(Set<Vec2> columns) {
+		if (columns.isEmpty()) {
+			return new AbstractMap.SimpleEntry<>(new Vec2(0, 0), new Vec2(0, 0));
+		}
+		Vec2 min = null;
+		Vec2 max = null;
+
+		for (Vec2 column : columns) {
+			if (min == null) {
+				min = column.clone();
+				max = column.clone();
+				continue;
+			}
+			if (column.getX() < min.getX()) {
+				min.setX(column.getX());
+			}
+			if (column.getZ() < min.getZ()) {
+				min.setZ(column.getZ());
+			}
+			if (column.getX() > max.getX()) {
+				max.setX(column.getX());
+			}
+			if (column.getZ() > max.getZ()) {
+				max.setZ(column.getZ());
+			}
+		}
+		return new AbstractMap.SimpleEntry<>(min, max.add(1, 1));
 	}
 }

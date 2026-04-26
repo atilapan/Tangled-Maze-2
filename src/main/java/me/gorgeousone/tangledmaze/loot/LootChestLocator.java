@@ -1,5 +1,6 @@
 package me.gorgeousone.tangledmaze.loot;
 
+import me.gorgeousone.tangledmaze.generation.AreaType;
 import me.gorgeousone.tangledmaze.generation.GridCell;
 import me.gorgeousone.tangledmaze.generation.GridMap;
 import me.gorgeousone.tangledmaze.generation.MazeMap;
@@ -51,7 +52,7 @@ public class LootChestLocator {
 		return availableCells;
 	}
 
-	public static Map<Vec2, Direction> findChestSpawns(int chestCount, List<GridCell> availableCells, GridMap gridMap, Set<Vec2> existingSpawns) {
+	public static Map<Vec2, Direction> findChestSpawns(int chestCount, List<GridCell> availableCells, MazeMap mazeMap, Set<Vec2> existingSpawns) {
 		Set<Vec2> occupiedBlocks = new HashSet<>();
 		existingSpawns.forEach(v -> markOccupiedSpawns(occupiedBlocks, v));
 		Map<Vec2, Direction> spawns = new HashMap<>();
@@ -60,14 +61,7 @@ public class LootChestLocator {
 		while (spawnAttempts > 0 && spawns.size() < chestCount && !availableCells.isEmpty()) {
 			--spawnAttempts;
 			GridCell cell = availableCells.get(RND.nextInt(availableCells.size()));
-			List<Direction> wallDirs = gridMap.getWallDirs(cell);
-			Map<Vec2, Direction> blocks = new HashMap<>();
-
-			for (Direction dir : wallDirs) {
-				for (Vec2 block : cell.getWalls(dir)) {
-					blocks.put(block, dir.getOpposite());
-				}
-			}
+			Map<Vec2, Direction> blocks = findSpawnBlocks(cell, mazeMap);
 			blocks.keySet().removeAll(occupiedBlocks);
 
 			if (blocks.isEmpty()) {
@@ -82,6 +76,24 @@ public class LootChestLocator {
 			markOccupiedSpawns(occupiedBlocks, rndBlock);
 		}
 		return spawns;
+	}
+
+	private static Map<Vec2, Direction> findSpawnBlocks(GridCell cell, MazeMap mazeMap) {
+		Map<Vec2, Direction> blocks = new HashMap<>();
+
+		for (Vec2 block : cell.getColumns()) {
+			if (mazeMap.getType(block) != AreaType.PATH) {
+				continue;
+			}
+			for (Direction dir : Direction.CARDINALS) {
+				Vec2 neighbor = block.clone().add(dir.getVec2());
+
+				if (mazeMap.getType(neighbor) == AreaType.WALL) {
+					blocks.put(block, dir.getOpposite());
+				}
+			}
+		}
+		return blocks;
 	}
 
 	private static boolean isWall(int gridX, int gridZ) {

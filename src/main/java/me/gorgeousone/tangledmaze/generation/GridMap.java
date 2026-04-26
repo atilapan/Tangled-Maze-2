@@ -18,23 +18,23 @@ import java.util.List;
  */
 public class GridMap {
 
-	private final Vec2 mapMin;
-	private final Vec2 mapMax;
-	private final int pathWidth;
-	private final int wallWidth;
-	private final int gridMeshSize;
+	protected final Vec2 mapMin;
+	protected final Vec2 mapMax;
+	protected final int pathWidth;
+	protected final int wallWidth;
+	protected final int gridMeshSize;
 
-	private Vec2 gridMin;
-	private Vec2 gridOffset;
-	private GridCell[][] gridCells;
+	protected Vec2 gridMin;
+	protected Vec2 gridOffset;
+	protected GridCell[][] gridCells;
 
-	private PathType[][] pathTypes;
-	private int[][] floorYs;
-	private int[][] wallYs;
+	protected PathType[][] pathTypes;
+	protected int[][] floorYs;
+	protected int[][] wallYs;
 
-	private final List<ExitSegment> exits;
-	private final List<GridCell> pathStarts;
-	private final List<Room> rooms;
+	protected final List<ExitSegment> exits;
+	protected final List<GridCell> pathStarts;
+	protected final List<Room> rooms;
 
 	public GridMap(Vec2 mapMin,
 	               Vec2 mapMax,
@@ -83,6 +83,11 @@ public class GridMap {
 		return getCell(neighborPos);
 	}
 
+	public GridCell getCellBetween(GridCell first, GridCell second) {
+		Vec2 linkingGridPos = first.getGridPos().add(second.getGridPos()).floorDiv(2);
+		return getCell(linkingGridPos);
+	}
+
 	public GridCell getCell(Vec2 gridPos) {
 		return getCell(gridPos.getX(), gridPos.getZ());
 	}
@@ -99,6 +104,9 @@ public class GridMap {
 	}
 
 	public PathType getPathType(GridCell cell) {
+		if (cell == null) {
+			return null;
+		}
 		return getPathType(cell.getGridPos());
 	}
 
@@ -114,6 +122,9 @@ public class GridMap {
 	}
 
 	public void setPathType(GridCell cell, PathType type) {
+		if (cell == null) {
+			return;
+		}
 		setPathType(cell.getGridPos(), type);
 	}
 
@@ -371,5 +382,9 @@ public class GridMap {
 			}
 		}
 		return pathNeighbors == 1;
+	}
+
+	public boolean hasCustomCells() {
+		return false;
 	}
 }

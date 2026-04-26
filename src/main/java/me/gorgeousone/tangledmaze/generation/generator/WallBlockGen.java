@@ -36,7 +36,9 @@ public class WallBlockGen extends BlockGen {
 		if (areWallsHollow &&
 		    settings.getValue(MazeProperty.WALL_WIDTH) > 2 &&
 		    settings.getValue(MazeProperty.WALL_HEIGHT) > 2) {
-			for (BlockVec block : hollowOutWall(mazeMap, gridMap)) {
+			Set<BlockVec> hollowedBlocks = gridMap.hasCustomCells() ? hollowOutCustomWall(mazeMap, gridMap) : hollowOutWall(mazeMap, gridMap);
+
+			for (BlockVec block : hollowedBlocks) {
 				walls.removeBlock(block);
 			}
 		}
@@ -104,6 +106,27 @@ public class WallBlockGen extends BlockGen {
 							blocksToRemove.add(new BlockVec(x, y, z));
 						}
 					}
+				}
+			}
+		}
+		return blocksToRemove;
+	}
+
+	private static Set<BlockVec> hollowOutCustomWall(MazeMap mazeMap, GridMap gridMap) {
+		Set<BlockVec> blocksToRemove = new HashSet<>();
+		Vec2 min = mazeMap.getMin();
+		Vec2 max = mazeMap.getMax();
+
+		for (int x = min.getX(); x < max.getX(); ++x) {
+			for (int z = min.getZ(); z < max.getZ(); ++z) {
+				if (mazeMap.getType(x, z) != AreaType.WALL || !isSurrounded(x, z, mazeMap)) {
+					continue;
+				}
+				int minY = getMinHollowY(x, z, mazeMap);
+				int maxY = getMaxHollowY(x, z, gridMap);
+
+				for (int y = minY; y < maxY; ++y) {
+					blocksToRemove.add(new BlockVec(x, y, z));
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package me.gorgeousone.tangledmaze.maze;
 
+import me.gorgeousone.tangledmaze.generation.MazeLayoutType;
 import me.gorgeousone.tangledmaze.generation.building.BlockPalette;
 
 import java.util.Arrays;
@@ -12,12 +13,14 @@ public class MazeSettings {
 	
 	private final HashMap<MazeProperty, Integer> properties;
 	private final HashMap<MazePart, BlockPalette> blockPalettes;
+	private MazeLayoutType layoutType;
 	
 	public MazeSettings() {
 		properties = new HashMap<>();
 		Arrays.stream(MazeProperty.values()).forEach(property -> properties.put(property, property.getDefault()));
 		blockPalettes = new HashMap<>();
 		blockPalettes.put(MazePart.WALLS, BlockPalette.getDefault());
+		layoutType = MazeLayoutType.GRID;
 	}
 	
 	public int getValue(MazeProperty property) {
@@ -33,6 +36,14 @@ public class MazeSettings {
 		}
 		properties.put(property, newValue);
 		return newValue;
+	}
+
+	public MazeLayoutType getLayoutType() {
+		return layoutType;
+	}
+
+	public void setLayoutType(MazeLayoutType layoutType) {
+		this.layoutType = layoutType;
 	}
 	
 	public void setPalette(MazePart mazePart, BlockPalette palette) {

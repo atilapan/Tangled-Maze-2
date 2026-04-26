@@ -83,6 +83,10 @@ public class MazeMapFactory {
 	 * Saves grid map and path trees in maze map.
 	 */
 	public static void createPaths(MazeMap mazeMap, List<Vec2> exits, MazeSettings settings, int worldMinY) {
+		if (settings.getLayoutType() == MazeLayoutType.POLAR) {
+			createPolarPaths(mazeMap, exits, settings, worldMinY);
+			return;
+		}
 		GridMap gridMap = new GridMap(
 				mazeMap.getMin(),
 				mazeMap.getMax(),
@@ -98,6 +102,23 @@ public class MazeMapFactory {
 			} else {
 				gridMap.setExit(exitLoc, getExitFacing(exitLoc, mazeMap));
 			}
+		}
+		mazeMap.setGridMap(gridMap);
+		RoomGen.genRooms(gridMap, settings);
+		PathGen.genPaths(gridMap, settings.getValue(MazeProperty.CURLINESS), settings.getValue(MazeProperty.SEED));
+		copyPathsOntoMazeMap(gridMap, mazeMap);
+	}
+
+	private static void createPolarPaths(MazeMap mazeMap, List<Vec2> exits, MazeSettings settings, int worldMinY) {
+		PolarGridMap gridMap = new PolarGridMap(
+				mazeMap,
+				settings.getValue(MazeProperty.PATH_WIDTH),
+				settings.getValue(MazeProperty.WALL_WIDTH));
+
+		copyMazeOntoGrid(mazeMap, gridMap, settings.getValue(MazeProperty.WALL_HEIGHT), worldMinY);
+
+		for (Vec2 exitLoc : exits) {
+			gridMap.setPolarExit(exitLoc, mazeMap);
 		}
 		mazeMap.setGridMap(gridMap);
 		RoomGen.genRooms(gridMap, settings);
@@ -140,15 +161,11 @@ public class MazeMapFactory {
 	 * Returns max y coordinate of floor found in a grid cell
 	 */
 	private static int getCellFloorY(GridCell cell, MazeMap mazeMap, int worldMinY) {
-		Vec2 cellMin = cell.getMin();
-		Vec2 cellMax = cell.getMax();
 		int maxY = worldMinY;
 		
-		for (int x = cellMin.getX(); x < cellMax.getX(); ++x) {
-			for (int z = cellMin.getZ(); z < cellMax.getZ(); ++z) {
-				if (mazeMap.contains(x, z)) {
-					maxY = Math.max(maxY, mazeMap.getY(x, z));
-				}
+		for (Vec2 column : cell.getColumns()) {
+			if (mazeMap.contains(column) && mazeMap.getType(column) != null) {
+				maxY = Math.max(maxY, mazeMap.getY(column));
 			}
 		}
 		return maxY;
@@ -180,21 +197,23 @@ public class MazeMapFactory {
 
 				if (pathType == PathType.PAVED || pathType == PathType.EXIT || pathType == PathType.ROOM) {
 					GridCell cell = gridMap.getCell(gridX, gridZ);
-					mazeMap.setType(cell.getMin(), cell.getMax(), AreaType.PATH);
+					for (Vec2 column : cell.getColumns()) {
+						if (mazeMap.contains(column) && mazeMap.getType(column) != null) {
+							mazeMap.setType(column, AreaType.PATH);
+						}
+					}
 				}
 			}
 		}
 	}
 	
 	private static boolean isCellFree(GridCell cell, MazeMap mazeMap) {
-		Vec2 cellMin = cell.getMin();
-		Vec2 cellMax = cell.getMax();
-		
-		for (int x = cellMin.getX(); x < cellMax.getX(); ++x) {
-			for (int z = cellMin.getZ(); z < cellMax.getZ(); ++z) {
-				if (mazeMap.getType(x, z) != AreaType.FREE) {
-					return false;
-				}
+		if (cell.getColumns().isEmpty()) {
+			return false;
+		}
+		for (Vec2 column : cell.getColumns()) {
+			if (mazeMap.getType(column) != AreaType.FREE) {
+				return false;
 			}
 		}
 		return true;

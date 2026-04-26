@@ -8,6 +8,7 @@ For downloads & more information:
 
 ## Features
 - Building mazes from rectangles, circles and triangles
+- Classic grid and polar maze layouts
 - Maze generation that adapts to height differences in the terrain
 - Highly customizable maze settings for sizes of paths, walls and composition of building blocks
 - Ability to set multiple entrances and exits for a maze

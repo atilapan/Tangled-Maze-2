@@ -250,12 +250,9 @@ public class RenderHandler implements Listener {
 		Map<Vec2, Integer> blocks = new HashMap<>();
 		
 		for (GridCell cell : solution) {
-			Vec2 min = cell.getMin();
-			Vec2 max = cell.getMax();
-			
-			for (int x = min.getX(); x < max.getX(); ++x) {
-				for (int z = min.getZ(); z < max.getZ(); ++z) {
-					blocks.put(new Vec2(x, z), mazeMap.getY(x, z));
+			for (Vec2 column : cell.getColumns()) {
+				if (mazeMap.contains(column)) {
+					blocks.put(column, mazeMap.getY(column));
 				}
 			}
 		}

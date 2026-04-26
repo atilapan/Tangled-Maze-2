@@ -14,6 +14,7 @@ public class Message {
 			COMMAND_ADD,
 			COMMAND_BUILD,
 			COMMAND_CUT,
+			COMMAND_LAYOUT,
 			COMMAND_LOOT,
 			COMMAND_SETTING,
 			COMMAND_SOLVE,
@@ -32,6 +33,8 @@ public class Message {
 			INFO_LOOT_REMOVE,
 			INFO_LOOT_RESPAWN,
 			INFO_LOOT_SPAWN,
+			INFO_LAYOUT_CHANGE,
+			INFO_LAYOUT_INFO,
 			INFO_MAZE_BUILD,
 			INFO_MAZE_NOT_EDITABLE,
 			INFO_MAZE_NOT_BUILT,
@@ -46,6 +49,7 @@ public class Message {
 			ERROR_CLIPBOARD_MISSING,
 			ERROR_EXIT_MISSING,
 			ERROR_INVALID_BLOCK_NAME,
+			ERROR_INVALID_LAYOUT,
 			ERROR_LOOT_CHEST_NAME_NOT_FOUND,
 			ERROR_MISSING_PERMISSION,
 			ERROR_INVALID_BLOCK_PROPERTY,
@@ -60,6 +64,7 @@ public class Message {
 				COMMAND_ADD,
 				COMMAND_CUT,
 				COMMAND_TOOL,
+				COMMAND_LAYOUT,
 				COMMAND_SETTING,
 				COMMAND_UNDO,
 				COMMAND_BUILD,
@@ -76,6 +81,7 @@ public class Message {
 		COMMAND_START = createHelpText("/maze start", helps, "start-command");
 		COMMAND_ADD = createHelpText("/maze add", helps, "add-command");
 		COMMAND_CUT = createHelpText("/maze cut", helps, "cut-command");
+		COMMAND_LAYOUT = createHelpText("/maze layout <grid/polar>", helps, "layout-command");
 
 		TOOL_RECT = createHelpText(ChatColor.YELLOW + "rectangle", helps, "tools.rectangle");
 		TOOL_CIRC = createHelpText(ChatColor.YELLOW + "circle", helps, "tools.circle");
@@ -122,6 +128,8 @@ public class Message {
 		INFO_LOOT_SPAWN = createInfo("loot-spawn", infos);
 		INFO_LOOT_RESPAWN = createInfo("loot-respawn", infos);
 		INFO_LOOT_REMOVE = createInfo("loot-remove", infos);
+		INFO_LAYOUT_INFO = createInfo("layout-info", infos);
+		INFO_LAYOUT_CHANGE = createInfo("layout-change", infos);
 
 		ConfigurationSection errors = langConfig.getConfigurationSection("errors");
 		ERROR_MISSING_PERMISSION = createError("missing-permission", errors);
@@ -130,6 +138,7 @@ public class Message {
 		ERROR_EXIT_MISSING = createError("no-exit-missing", errors);
 		ERROR_LOOT_CHEST_NAME_NOT_FOUND = createError("loot-chest-name-not-found", errors);
 		ERROR_INVALID_TOOL = createError("invalid-tool", errors);
+		ERROR_INVALID_LAYOUT = createError("invalid-layout", errors);
 		ERROR_INVALID_SETTING = createError("invalid-setting", errors);
 		ERROR_INVALID_BLOCK_NAME = createError("invalid-block-name", errors);
 		ERROR_INVALID_BLOCK_PROPERTY = createError("invalid-block-property", errors);
