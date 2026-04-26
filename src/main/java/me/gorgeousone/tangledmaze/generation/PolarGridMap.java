@@ -148,7 +148,7 @@ public class PolarGridMap extends GridMap {
 		setPathType(exitCell, PathType.EXIT);
 		pathStarts.add(exitCell);
 		exits.add(new ExitSegment(exitTarget, Direction.EAST, 1));
-		carveExit(exitBlockLoc, exitTarget, mazeMap);
+		carveExit(exitCell, exitBlockLoc, mazeMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -273,23 +273,50 @@ public class PolarGridMap extends GridMap {
 		return result == null ? loc.clone() : result;
 	}
 
-	private void carveExit(Vec2 exitBlockLoc, Vec2 exitTarget, MazeMap mazeMap) {
-		int dx = exitTarget.getX() - exitBlockLoc.getX();
-		int dz = exitTarget.getZ() - exitBlockLoc.getZ();
-		int steps = Math.max(Math.abs(dx), Math.abs(dz));
+	private void carveExit(GridCell exitCell, Vec2 exitBlockLoc, MazeMap mazeMap) {
+		Vec2 cellPos = exitCell.getGridPos();
+		int sector = cellPos.getZ() / 2;
+		int meshIdx = cellPos.getX() / 2;
+		//align corridor with the cell's path-band midangle so it snaps to the path grid
+		double midAngle = sector * sectorAngle + pathAngle / 2;
+		double midRadius = meshIdx * gridMeshSize + pathWidth / 2.0;
 
-		if (steps == 0) {
-			if (mazeMap.contains(exitBlockLoc) && mazeMap.getType(exitBlockLoc) != null) {
-				mazeMap.setType(exitBlockLoc, AreaType.PATH);
-			}
-			return;
+		double dirX = Math.cos(midAngle);
+		double dirZ = Math.sin(midAngle);
+		double perpX = -dirZ;
+		double perpZ = dirX;
+
+		//carve toward the click: outward for outer-outline exits, inward for inner-outline
+		//exits. Extending pathWidth past the click guarantees the corridor punches through
+		//the outline instead of stopping inside the maze.
+		double bcx = exitBlockLoc.getX() + 0.5d - centerX;
+		double bcz = exitBlockLoc.getZ() + 0.5d - centerZ;
+		double clickR = Math.sqrt(bcx * bcx + bcz * bcz);
+		double startR;
+		double stopR;
+
+		if (clickR >= midRadius) {
+			startR = midRadius;
+			stopR = clickR + pathWidth;
+		} else {
+			startR = Math.max(0d, clickR - pathWidth);
+			stopR = midRadius;
 		}
-		for (int i = 0; i <= steps; ++i) {
-			int x = exitBlockLoc.getX() + (int) Math.round(dx * i / (double) steps);
-			int z = exitBlockLoc.getZ() + (int) Math.round(dz * i / (double) steps);
+		int halfBack = pathWidth / 2;
 
-			if (mazeMap.contains(x, z) && mazeMap.getType(x, z) != null) {
-				mazeMap.setType(x, z, AreaType.PATH);
+		//step radially in 0.5-block increments so adjacent slabs always overlap and
+		//no gaps appear between rows when the corridor angle isn't axis-aligned
+		for (double r = startR; r <= stopR; r += 0.5) {
+			double px = centerX + r * dirX;
+			double pz = centerZ + r * dirZ;
+
+			for (int w = -halfBack; w < pathWidth - halfBack; ++w) {
+				int x = (int) Math.floor(px + perpX * w);
+				int z = (int) Math.floor(pz + perpZ * w);
+
+				if (mazeMap.contains(x, z) && mazeMap.getType(x, z) != null) {
+					mazeMap.setType(x, z, AreaType.PATH);
+				}
 			}
 		}
 	}
