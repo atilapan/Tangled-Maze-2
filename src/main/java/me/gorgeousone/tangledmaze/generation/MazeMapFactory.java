@@ -5,6 +5,7 @@ import me.gorgeousone.tangledmaze.generation.paving.ExitSegment;
 import me.gorgeousone.tangledmaze.generation.paving.PathGen;
 import me.gorgeousone.tangledmaze.generation.paving.PathType;
 import me.gorgeousone.tangledmaze.generation.paving.RoomGen;
+import me.gorgeousone.tangledmaze.generation.polar.PolarMazeFactory;
 import me.gorgeousone.tangledmaze.maze.MazeProperty;
 import me.gorgeousone.tangledmaze.maze.MazeSettings;
 import me.gorgeousone.tangledmaze.util.BlockUtil;
@@ -110,20 +111,7 @@ public class MazeMapFactory {
 	}
 
 	private static void createPolarPaths(MazeMap mazeMap, List<Vec2> exits, MazeSettings settings, int worldMinY) {
-		PolarGridMap gridMap = new PolarGridMap(
-				mazeMap,
-				settings.getValue(MazeProperty.PATH_WIDTH),
-				settings.getValue(MazeProperty.WALL_WIDTH));
-
-		copyMazeOntoGrid(mazeMap, gridMap, settings.getValue(MazeProperty.WALL_HEIGHT), worldMinY);
-
-		for (Vec2 exitLoc : exits) {
-			gridMap.setPolarExit(exitLoc, mazeMap);
-		}
-		mazeMap.setGridMap(gridMap);
-		RoomGen.genRooms(gridMap, settings);
-		PathGen.genPaths(gridMap, settings.getValue(MazeProperty.CURLINESS), settings.getValue(MazeProperty.SEED));
-		copyPathsOntoMazeMap(gridMap, mazeMap);
+		PolarMazeFactory.createPaths(mazeMap, exits, settings, worldMinY);
 	}
 	
 	private static Direction getExitFacing(Vec2 exit, MazeMap mazeMap) {
