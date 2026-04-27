@@ -27,6 +27,7 @@ public class GridMap {
 	protected Vec2 gridMin;
 	protected Vec2 gridOffset;
 	protected GridCell[][] gridCells;
+	protected boolean flat;
 
 	protected PathType[][] pathTypes;
 	protected int[][] floorYs;
@@ -62,6 +63,10 @@ public class GridMap {
 		return new ArrayList<>(exits);
 	}
 
+	public void addExit(ExitSegment exit) {
+		exits.add(exit);
+	}
+
 	public List<GridCell> getPathStarts() {
 		return pathStarts;
 	}
@@ -70,12 +75,40 @@ public class GridMap {
 	 * Returns the grid coordinates of the grid cell that is located at this world location
 	 */
 	public Vec2 getGridPos(Vec2 loc) {
+		if (flat) {
+			return loc.clone().sub(mapMin);
+		}
 		Vec2 gridPos = loc.clone().sub(gridMin).floorDiv(gridMeshSize).mult(2);
 		Vec2 offset = loc.clone().sub(gridMin).floorMod(gridMeshSize);
 		gridPos.add(
 				offset.getX() < pathWidth ? 0 : 1,
 				offset.getZ() < pathWidth ? 0 : 1);
 		return gridPos;
+	}
+
+	/**
+	 * Initializes the grid map as a 1-block-per-cell flat grid over the full map bounds.
+	 * Used by non-Cartesian layouts (e.g. polar) that populate MazeMap's AreaType directly
+	 * but still want to reuse the Cartesian wall/floor/roof block generators.
+	 */
+	public void initFlat() {
+		flat = true;
+		gridOffset = new Vec2(0, 0);
+		gridMin = mapMin.clone();
+		int width = mapMax.getX() - mapMin.getX();
+		int height = mapMax.getZ() - mapMin.getZ();
+		gridCells = new GridCell[width][height];
+		pathTypes = new PathType[width][height];
+		floorYs = new int[width][height];
+		wallYs = new int[width][height];
+
+		for (int x = 0; x < width; ++x) {
+			for (int z = 0; z < height; ++z) {
+				Vec2 blockMin = new Vec2(mapMin.getX() + x, mapMin.getZ() + z);
+				gridCells[x][z] = new GridCell(blockMin, new Vec2(1, 1), new Vec2(x, z));
+				pathTypes[x][z] = PathType.FREE;
+			}
+		}
 	}
 
 	public GridCell getCell(GridCell cell, Direction direction) {
